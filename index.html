@@ -575,57 +575,53 @@
     });
 
     /* ── KIT FORM SUBMISSION ──
-       Uses a hidden iframe to POST directly to Kit's endpoint.
-       This avoids all cross-origin issues — most reliable method
-       without a server-side backend.
-       Hero form  → tags subscriber as 'creator'
-       Bottom CTA → tags subscriber as 'collector'
+       Posts to confirmed convertkit.com endpoint via hidden iframe.
+       Hero form  → creator tag
+       Bottom CTA → collector tag
     */
     const KIT_URL = 'https://app.convertkit.com/forms/cdc3844c6a/subscriptions';
 
     function postToKit(email, tag, successId, formId, noteId, labelFor) {
 
-      // Build a hidden form and submit it into a hidden iframe
-      // so the page never navigates away
-      const iframeName = 'kit-submit-' + Date.now();
+      const iframeName = 'kit-iframe-' + Date.now();
       const iframe = document.createElement('iframe');
       iframe.name = iframeName;
-      iframe.style.display = 'none';
+      iframe.style.cssText = 'display:none;width:0;height:0;border:0;';
       document.body.appendChild(iframe);
 
       const form = document.createElement('form');
-      form.method = 'POST';
-      form.action = KIT_URL;
-      form.target = iframeName;
+      form.method  = 'POST';
+      form.action  = KIT_URL;
+      form.target  = iframeName;
+      form.enctype = 'application/x-www-form-urlencoded';
       form.style.display = 'none';
 
-      // Email field
-      const emailField = document.createElement('input');
-      emailField.type = 'hidden';
-      emailField.name = 'email_address';
-      emailField.value = email;
-      form.appendChild(emailField);
+      // email_address — Kit's required field name
+      const eF = document.createElement('input');
+      eF.type = 'hidden'; eF.name = 'email_address'; eF.value = email;
+      form.appendChild(eF);
 
-      // Tag field
-      const tagField = document.createElement('input');
-      tagField.type = 'hidden';
-      tagField.name = 'tags[]';
-      tagField.value = tag;
-      form.appendChild(tagField);
+      // tags
+      const tF = document.createElement('input');
+      tF.type = 'hidden'; tF.name = 'tags[]'; tF.value = tag;
+      form.appendChild(tF);
+
+      // utf8 token Kit expects
+      const uF = document.createElement('input');
+      uF.type = 'hidden'; uF.name = 'utf8'; uF.value = '\u2713';
+      form.appendChild(uF);
 
       document.body.appendChild(form);
       form.submit();
 
-      // Clean up after submission
       setTimeout(() => {
-        document.body.removeChild(form);
-        document.body.removeChild(iframe);
-      }, 5000);
+        try { document.body.removeChild(form); } catch(e){}
+        try { document.body.removeChild(iframe); } catch(e){}
+      }, 6000);
 
-      // Show success UI immediately
-      if (formId)    document.getElementById(formId).style.display = 'none';
-      if (noteId)    document.getElementById(noteId).style.display = 'none';
-      if (labelFor)  { const l = document.querySelector('[for="'+labelFor+'"]'); if(l) l.style.display='none'; }
+      if (formId)   document.getElementById(formId).style.display   = 'none';
+      if (noteId)   document.getElementById(noteId).style.display   = 'none';
+      if (labelFor) { const l = document.querySelector('[for="'+labelFor+'"]'); if(l) l.style.display='none'; }
       if (successId) document.getElementById(successId).style.display = 'block';
     }
 
