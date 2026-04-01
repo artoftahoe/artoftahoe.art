@@ -259,6 +259,21 @@
     .f-logo { font-family:'Cormorant Garamond',serif; font-weight:300; font-size:.95rem; letter-spacing:.22em; text-transform:uppercase; color:var(--gold); }
     footer p { font-size:.6rem; letter-spacing:.12em; color:rgba(245,245,240,.3); }
 
+    /* ── Suppress Kit's injected embed UI — we use their API only ── */
+    [data-uid="cdc3844c6a"],
+    .formkit-form,
+    .formkit-container,
+    .seva-form,
+    .formkit-overlay,
+    .formkit-powered-by-convertkit-container,
+    div[class*="formkit"],
+    div[class*="seva"] {
+      display: none !important;
+      visibility: hidden !important;
+      height: 0 !important;
+      overflow: hidden !important;
+    }
+
     @keyframes fadeUp { from{opacity:0;transform:translateY(22px)} to{opacity:1;transform:translateY(0)} }
     @keyframes fadeDown { from{opacity:0;transform:translateY(-14px)} to{opacity:1;transform:translateY(0)} }
     @keyframes shakeX { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }
@@ -461,7 +476,7 @@
         <span class="feat">Original Works</span>
         <span class="feat">Artist-Direct Pricing</span>
         <span class="feat">Tahoe-Based Makers</span>
-        <span class="feat">Limited Editions</span>
+        <span class="feat">Handcrafted Artistry</span>
       </div>
       <div class="form-wrap">
         <label class="form-label" for="hero-email">Get early access — founding creator list</label>
@@ -469,8 +484,8 @@
           <input type="email" id="hero-email" placeholder="your@email.com" autocomplete="email"/>
           <button onclick="submitHero()">I'm In</button>
         </div>
-        <p class="form-note" id="hero-note">Founding creators get first access to curated collection listings and premier features promoting your works to potential collectors.</p>
-        <p class="success-msg" id="hero-success">✦ &nbsp;You're in. Something worth waiting for is almost here.</p>
+        <p class="form-note" id="hero-note">Founding creators get first access to curated collections listings and premier features promoting your works to potential collectors.</p>
+        <p class="success-msg" id="hero-success">✦ &nbsp;You're in. Check your email to verify your place in the new marketplace. You'll have a home for your work, a direct line to the collectors who will love it, and a platform that works as hard for you as you do in the studio. We'll be in touch soon.</p>
       </div>
     </div>
 
@@ -531,7 +546,7 @@
   <section class="cta-section">
     <p class="section-eyebrow" style="margin-bottom:1.2rem">The List Is Small. The Access Is Real.</p>
     <h2>The founding collection<br>is <em>almost ready.</em></h2>
-    <p>A small group of collectors will have access before we open to the public — original works, studio introductions, and pieces that won't be available anywhere else. If you've ever wanted to collect art that means something, this is where that starts.</p>
+    <p>Founding creators get first access to curated collections listings and premier features promoting your works to potential collectors.</p>
     <div class="cta-form-wrap">
       <div class="cta-form-row" id="cta-form-row">
         <input type="email" id="cta-email" placeholder="your@email.com" autocomplete="email"/>
@@ -545,7 +560,7 @@
   <!-- FOOTER -->
   <footer>
     <span class="f-logo">Art of Tahoe</span>
-    <p>artoftahoe.art &nbsp;·&nbsp; South Lake Tahoe, CA &nbsp;·&nbsp; Original Art, Direct from the Sierra</p>
+    <p>artoftahoe.art &nbsp;·&nbsp; South Lake Tahoe, CA</p>
   </footer>
 
   <script>
