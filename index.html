@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -463,12 +464,12 @@
         <span class="feat">Limited Editions</span>
       </div>
       <div class="form-wrap">
-        <label class="form-label" for="hero-email">Get early access — founding collector list</label>
+        <label class="form-label" for="hero-email">Get early access — founding creator list</label>
         <div class="form-row" id="hero-form-row">
           <input type="email" id="hero-email" placeholder="your@email.com" autocomplete="email"/>
           <button onclick="submitHero()">I'm In</button>
         </div>
-        <p class="form-note" id="hero-note">Founding members get first access to new works, studio visits, and prices that reflect the artist — not the gallery markup.</p>
+        <p class="form-note" id="hero-note">Founding creators get first access to curated collection listings and premier features promoting your works to potential collectors.</p>
         <p class="success-msg" id="hero-success">✦ &nbsp;You're in. Something worth waiting for is almost here.</p>
       </div>
     </div>
@@ -558,20 +559,71 @@
       el.addEventListener('mouseleave',()=>{ cur.style.width='8px'; cur.style.height='8px'; ring.style.opacity='.45'; });
     });
 
-    function submitHero(){
-      const v=document.getElementById('hero-email').value.trim();
-      if(!v||!v.includes('@')){ shake('hero-form-row'); return; }
-      document.getElementById('hero-form-row').style.display='none';
-      document.getElementById('hero-note').style.display='none';
-      document.querySelector('[for="hero-email"]').style.display='none';
-      document.getElementById('hero-success').style.display='block';
+    /* ── KIT FORM SUBMISSION ──
+       Uses a hidden iframe to POST directly to Kit's endpoint.
+       This avoids all cross-origin issues — most reliable method
+       without a server-side backend.
+       Hero form  → tags subscriber as 'creator'
+       Bottom CTA → tags subscriber as 'collector'
+    */
+    const KIT_URL = 'https://app.convertkit.com/forms/cdc3844c6a/subscriptions';
+
+    function postToKit(email, tag, successId, formId, noteId, labelFor) {
+
+      // Build a hidden form and submit it into a hidden iframe
+      // so the page never navigates away
+      const iframeName = 'kit-submit-' + Date.now();
+      const iframe = document.createElement('iframe');
+      iframe.name = iframeName;
+      iframe.style.display = 'none';
+      document.body.appendChild(iframe);
+
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = KIT_URL;
+      form.target = iframeName;
+      form.style.display = 'none';
+
+      // Email field
+      const emailField = document.createElement('input');
+      emailField.type = 'hidden';
+      emailField.name = 'email_address';
+      emailField.value = email;
+      form.appendChild(emailField);
+
+      // Tag field
+      const tagField = document.createElement('input');
+      tagField.type = 'hidden';
+      tagField.name = 'tags[]';
+      tagField.value = tag;
+      form.appendChild(tagField);
+
+      document.body.appendChild(form);
+      form.submit();
+
+      // Clean up after submission
+      setTimeout(() => {
+        document.body.removeChild(form);
+        document.body.removeChild(iframe);
+      }, 5000);
+
+      // Show success UI immediately
+      if (formId)    document.getElementById(formId).style.display = 'none';
+      if (noteId)    document.getElementById(noteId).style.display = 'none';
+      if (labelFor)  { const l = document.querySelector('[for="'+labelFor+'"]'); if(l) l.style.display='none'; }
+      if (successId) document.getElementById(successId).style.display = 'block';
     }
-    function submitCTA(){
-      const v=document.getElementById('cta-email').value.trim();
-      if(!v||!v.includes('@')){ shake('cta-form-row'); return; }
-      document.getElementById('cta-form-row').style.display='none';
-      document.getElementById('cta-note').style.display='none';
-      document.getElementById('cta-success').style.display='block';
+
+    function submitHero() {
+      const v = document.getElementById('hero-email').value.trim();
+      if (!v || !v.includes('@')) { shake('hero-form-row'); return; }
+      postToKit(v, 'creator', 'hero-success', 'hero-form-row', 'hero-note', 'hero-email');
+    }
+
+    function submitCTA() {
+      const v = document.getElementById('cta-email').value.trim();
+      if (!v || !v.includes('@')) { shake('cta-form-row'); return; }
+      postToKit(v, 'collector', 'cta-success', 'cta-form-row', 'cta-note', null);
     }
     function shake(id){ const el=document.getElementById(id); el.style.animation='shakeX .4s ease'; setTimeout(()=>el.style.animation='',450); }
     document.getElementById('hero-email').addEventListener('keydown',e=>{ if(e.key==='Enter') submitHero(); });
@@ -588,5 +640,7 @@
     },{threshold:.12});
     document.querySelectorAll('[data-reveal]').forEach(el=>io.observe(el));
   </script>
+  <!-- Kit (ConvertKit) form integration -->
+  <script async data-uid="cdc3844c6a" src="https://artoftahoe.kit.com/cdc3844c6a/index.js"></script>
 </body>
 </html>
