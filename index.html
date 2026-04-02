@@ -480,10 +480,12 @@
       </div>
       <div class="form-wrap">
         <label class="form-label" for="hero-email">Get early access — founding creator list</label>
-        <div class="form-row" id="hero-form-row">
-          <input type="email" id="hero-email" placeholder="your@email.com" autocomplete="email"/>
-          <button onclick="submitHero()">I'm In</button>
-        </div>
+        <form id="creator-form">
+          <div class="form-row" id="hero-form-row">
+            <input type="email" id="hero-email" name="email" placeholder="your@email.com" autocomplete="email" data-fs-field required/>
+            <button type="submit" id="hero-btn" data-fs-submit-btn>I'm In</button>
+          </div>
+        </form>
         <p class="form-note" id="hero-note">Founding creators get first access to curated collections listings and premier features promoting your works to potential collectors.</p>
         <p class="success-msg" id="hero-success">✦ &nbsp;You're in. Check your email to verify your place in the new marketplace. You'll have a home for your work, a direct line to the collectors who will love it, and a platform that works as hard for you as you do in the studio. We'll be in touch soon.</p>
       </div>
@@ -548,10 +550,12 @@
     <h2>The founding collection<br>is <em>almost ready.</em></h2>
     <p>Founding creators get first access to curated collections listings and premier features promoting your works to potential collectors.</p>
     <div class="cta-form-wrap">
-      <div class="cta-form-row" id="cta-form-row">
-        <input type="email" id="cta-email" placeholder="your@email.com" autocomplete="email"/>
-        <button onclick="submitCTA()">Claim My Spot</button>
-      </div>
+      <form id="collector-form">
+        <div class="cta-form-row" id="cta-form-row">
+          <input type="email" id="cta-email" name="email" placeholder="your@email.com" autocomplete="email" data-fs-field required/>
+          <button type="submit" id="cta-btn" data-fs-submit-btn>Claim My Spot</button>
+        </div>
+      </form>
       <p class="cta-note" id="cta-note">No spam. No noise. Just art worth caring about, from artists worth knowing. Unsubscribe anytime.</p>
       <p class="cta-success" id="cta-success">✦ &nbsp;Reserved. We'll be in touch before the doors open.</p>
     </div>
@@ -574,71 +578,44 @@
       el.addEventListener('mouseleave',()=>{ cur.style.width='8px'; cur.style.height='8px'; ring.style.opacity='.45'; });
     });
 
-    /* ── KIT FORM SUBMISSION ──
-       Posts to confirmed convertkit.com endpoint via hidden iframe.
-       Hero form  → creator tag
-       Bottom CTA → collector tag
+    /* ── FORMSPREE AJAX SUBMISSION ──
+       Single endpoint handles both forms.
+       Hidden 'list' field tags creator vs collector in dashboard.
     */
-    const KIT_URL = 'https://app.convertkit.com/forms/cdc3844c6a/subscriptions';
+    window.formspree = window.formspree || function(){ (formspree.q = formspree.q || []).push(arguments); };
 
-    function postToKit(email, tag, successId, formId, noteId, labelFor) {
+    // Init creator form
+    formspree('initForm', {
+      formElement: '#creator-form',
+      formId: 'mreoaake',
+      data: { list: 'creator' },
+      onSuccess: function() {
+        document.getElementById('hero-form-row').style.display = 'none';
+        document.getElementById('hero-note').style.display     = 'none';
+        const l = document.querySelector('[for="hero-email"]');
+        if (l) l.style.display = 'none';
+        document.getElementById('hero-success').style.display  = 'block';
+      },
+      onError: function() {
+        shake('hero-form-row');
+      }
+    });
 
-      const iframeName = 'kit-iframe-' + Date.now();
-      const iframe = document.createElement('iframe');
-      iframe.name = iframeName;
-      iframe.style.cssText = 'display:none;width:0;height:0;border:0;';
-      document.body.appendChild(iframe);
-
-      const form = document.createElement('form');
-      form.method  = 'POST';
-      form.action  = KIT_URL;
-      form.target  = iframeName;
-      form.enctype = 'application/x-www-form-urlencoded';
-      form.style.display = 'none';
-
-      // email_address — Kit's required field name
-      const eF = document.createElement('input');
-      eF.type = 'hidden'; eF.name = 'email_address'; eF.value = email;
-      form.appendChild(eF);
-
-      // tags
-      const tF = document.createElement('input');
-      tF.type = 'hidden'; tF.name = 'tags[]'; tF.value = tag;
-      form.appendChild(tF);
-
-      // utf8 token Kit expects
-      const uF = document.createElement('input');
-      uF.type = 'hidden'; uF.name = 'utf8'; uF.value = '\u2713';
-      form.appendChild(uF);
-
-      document.body.appendChild(form);
-      form.submit();
-
-      setTimeout(() => {
-        try { document.body.removeChild(form); } catch(e){}
-        try { document.body.removeChild(iframe); } catch(e){}
-      }, 6000);
-
-      if (formId)   document.getElementById(formId).style.display   = 'none';
-      if (noteId)   document.getElementById(noteId).style.display   = 'none';
-      if (labelFor) { const l = document.querySelector('[for="'+labelFor+'"]'); if(l) l.style.display='none'; }
-      if (successId) document.getElementById(successId).style.display = 'block';
-    }
-
-    function submitHero() {
-      const v = document.getElementById('hero-email').value.trim();
-      if (!v || !v.includes('@')) { shake('hero-form-row'); return; }
-      postToKit(v, 'creator', 'hero-success', 'hero-form-row', 'hero-note', 'hero-email');
-    }
-
-    function submitCTA() {
-      const v = document.getElementById('cta-email').value.trim();
-      if (!v || !v.includes('@')) { shake('cta-form-row'); return; }
-      postToKit(v, 'collector', 'cta-success', 'cta-form-row', 'cta-note', null);
-    }
+    // Init collector form
+    formspree('initForm', {
+      formElement: '#collector-form',
+      formId: 'mreoaake',
+      data: { list: 'collector' },
+      onSuccess: function() {
+        document.getElementById('cta-form-row').style.display = 'none';
+        document.getElementById('cta-note').style.display     = 'none';
+        document.getElementById('cta-success').style.display  = 'block';
+      },
+      onError: function() {
+        shake('cta-form-row');
+      }
+    });
     function shake(id){ const el=document.getElementById(id); el.style.animation='shakeX .4s ease'; setTimeout(()=>el.style.animation='',450); }
-    document.getElementById('hero-email').addEventListener('keydown',e=>{ if(e.key==='Enter') submitHero(); });
-    document.getElementById('cta-email').addEventListener('keydown',e=>{ if(e.key==='Enter') submitCTA(); });
 
     const io=new IntersectionObserver(entries=>{
       entries.forEach(entry=>{
@@ -651,7 +628,7 @@
     },{threshold:.12});
     document.querySelectorAll('[data-reveal]').forEach(el=>io.observe(el));
   </script>
-  <!-- Kit (ConvertKit) form integration -->
-  <script async data-uid="cdc3844c6a" src="https://artoftahoe.kit.com/cdc3844c6a/index.js"></script>
+  <!-- Formspree Ajax — handles both creator and collector form submissions -->
+  <script src="https://unpkg.com/@formspree/ajax@1" defer></script>
 </body>
 </html>
